@@ -13,11 +13,11 @@ permissions:
 
 jobs:
   update-rules:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Priority IT repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download and validate CyberDrain rules
         shell: bash
