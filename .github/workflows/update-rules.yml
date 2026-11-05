@@ -1,0 +1,76 @@
+
+name: Update CyberDrain Detection Rules
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Run every six hours (UTC)
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Priority IT repository
+        uses: actions/checkout@v4
+
+      - name: Download and validate CyberDrain rules
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+          from pathlib import Path
+
+          url = "https://raw.githubusercontent.com/CyberDrain/Check/refs/heads/main/rules/detection-rules.json"
+
+          print("Downloading official CyberDrain rules...")
+
+          request = urllib.request.Request(
+              url,
+              headers={"User-Agent": "PriorityIT-Check-Updater"}
+          )
+
+          with urllib.request.urlopen(request, timeout=30) as response:
+              data = response.read()
+
+          rules = json.loads(data)
+
+          if not isinstance(rules, dict):
+              raise ValueError("Expected a JSON object")
+
+          if not any(key in rules for key in (
+              "phishing_indicators",
+              "m365_detection_requirements",
+              "exclusion_system"
+          )):
+              raise ValueError("Expected CyberDrain rules sections missing")
+
+          Path("detection-rules.json").write_text(
+              json.dumps(rules, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8"
+          )
+
+          print("CyberDrain detection rules downloaded and validated.")
+          PY
+
+      - name: Commit updated rules
+        shell: bash
+        run: |
+          git config user.name "Priority IT Rules Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add detection-rules.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to detection rules."
+          else
+            git commit -m "Update CyberDrain detection rules"
+            git push
+            echo "Updated detection rules published."
+          fi
