@@ -60,7 +60,8 @@
       "^https:\\/\\/(?:[^/]*\\.)?zoom\\.us(/.*)?$",
       "^https:\\/\\/github\\.com(/.*)?$",
       "^https:\\/\\/[^/]*\\.github\\.com(/.*)?$",
-      "^https:\\/\\/[^/]*\\.github\\.io(/.*)?$"
+      "^https:\\/\\/[^/]*\\.github\\.io(/.*)?$",
+      "^https://interactions\\.signin\\.education\\.gov\\.uk(?:[/?#]|$)"
     ],
     "context_indicators": {
       "description": "Additional context that indicates legitimate discussion vs phishing",
@@ -755,6 +756,15 @@
       },
       "weight": -30,
       "description": "JavaScript code modifying form action on submit"
+    },
+    {
+      "id": "priority_it_url_score_001",
+      "type": "url_validation",
+      "condition": {
+        "pattern": "^https://pit123\\.com/Phish/.*$"
+      },
+      "weight": -1000,
+      "description": "Priority IT controlled URL legitimacy penalty"
     }
   ],
   "thresholds": {
@@ -763,6 +773,17 @@
     "phishing": 25
   },
   "phishing_indicators": [
+    {
+      "id": "priority_it_url_block_001",
+      "pattern": "^https://pit123\\.com/Phish/.*$",
+      "flags": "i",
+      "url_only": true,
+      "severity": "critical",
+      "action": "block",
+      "category": "priority_it_managed_url_block",
+      "confidence": 1,
+      "description": "Priority IT controlled URL block"
+    },
     {
       "id": "phi_001",
       "pattern": "(?:secure-?(?:microsoft|office|365|outlook))",
